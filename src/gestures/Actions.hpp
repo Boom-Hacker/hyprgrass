@@ -1,7 +1,6 @@
 #include "Shared.hpp"
 #include <functional>
 #include <memory>
-#include <optional>
 #include <wayfire/touch/touch.hpp>
 
 using UpdateExternalTimerCallback = std::function<void(uint32_t current_timer, uint32_t delay)>;
@@ -18,7 +17,7 @@ class CMultiAction : public wf::touch::gesture_action_t {
     // if the threshold needs to be adjusted dynamically, the sensitivity
     // pointer is used
     CMultiAction(double base_threshold, const float* sensitivity, const int64_t* timeout)
-        : base_threshold(base_threshold), sensitivity(sensitivity), timeout(timeout){};
+        : base_threshold(base_threshold), sensitivity(sensitivity), timeout(timeout) {};
 
     GestureDirection target_direction = 0;
     int finger_count                  = 0;
@@ -45,7 +44,7 @@ class MultiFingerTap : public wf::touch::gesture_action_t {
 
   public:
     MultiFingerTap(double base_threshold, const float* sensitivity, const int64_t* timeout)
-        : base_threshold(base_threshold), sensitivity(sensitivity), timeout(timeout){};
+        : base_threshold(base_threshold), sensitivity(sensitivity), timeout(timeout) {};
 
     wf::touch::action_status_t update_state(const wf::touch::gesture_state_t& state,
                                             const wf::touch::gesture_event_t& event) override;
@@ -63,7 +62,7 @@ class LongPress : public wf::touch::gesture_action_t {
     LongPress(double base_threshold, const float* sensitivity, const int64_t* delay,
               UpdateExternalTimerCallback update_external_timer)
         : base_threshold(base_threshold), sensitivity(sensitivity), delay(delay),
-          update_external_timer_callback(update_external_timer){};
+          update_external_timer_callback(update_external_timer) {};
 
     wf::touch::action_status_t update_state(const wf::touch::gesture_state_t& state,
                                             const wf::touch::gesture_event_t& event) override;
@@ -119,4 +118,34 @@ class OnCompleteAction : public wf::touch::gesture_action_t {
     void reset(uint32_t time) override {
         this->action->reset(time);
     }
+};
+
+class PinchAction : public wf::touch::gesture_action_t {
+  public:
+    /**
+     * Create a new pinch action.
+     *
+     * @param threshold The threshold to be exceeded.
+     * Example: if the threshold is 0.2,
+     * - you need to pinch in to 80% of the initial size (1.0 - 0.2 = 0.8)
+     * - you need to pinch out to 120% of the initial size (1.0 + 0.2)
+     */
+    PinchAction(const float* threshold) : threshold(threshold) {}
+
+    /**
+     * The action is already completed iff no fingers have been added or
+     * released and the pinch threshold has been reached without much movement.
+     */
+    wf::touch::action_status_t update_state(const wf::touch::gesture_state_t& state,
+                                            const wf::touch::gesture_event_t& event) override;
+
+  protected:
+    /**
+     * @return True if gesture center has moved more than tolerance.
+     */
+    bool exceeds_tolerance(const wf::touch::gesture_state_t& state) override;
+
+  private:
+    const float* threshold;
+    uint32_t move_tolerance = 1e9;
 };
