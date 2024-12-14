@@ -88,7 +88,7 @@ GestureManager::GestureManager() : IGestureManager(std::make_unique<HyprLogger>(
         (Hyprlang::INT* const*)HyprlandAPI::getConfigValue(PHANDLE, "plugin:touch_gestures:edge_margin")
             ->getDataStaticPtr();
 
-    this->addMultiFingerGesture(*PSENSITIVITY, *LONG_PRESS_DELAY);
+    this->addMultiFingerGesture(*PSENSITIVITY, *LONG_PRESS_DELAY, *PINCH_THRESHOLD);
     this->addMultiFingerTap(*PSENSITIVITY, *LONG_PRESS_DELAY);
     this->addLongPress(*PSENSITIVITY, *LONG_PRESS_DELAY);
     this->addEdgeSwipeGesture(*PSENSITIVITY, *LONG_PRESS_DELAY, *EDGE_MARGIN);

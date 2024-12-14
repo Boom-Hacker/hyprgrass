@@ -124,7 +124,8 @@ void IGestureManager::addTouchGesture(std::unique_ptr<wf::touch::gesture_t> gest
     this->m_vGestures.emplace_back(std::move(gesture));
 }
 
-void IGestureManager::addMultiFingerGesture(const float* sensitivity, const int64_t* timeout) {
+void IGestureManager::addMultiFingerGesture(const float* sensitivity, const int64_t* timeout,
+                                            const float* pinch_threshold) {
     auto multi_down_and_send_cancel = std::make_unique<OnCompleteAction>(
         std::make_unique<MultiFingerDownAction>(), [this]() { this->cancelTouchEventsOnAllWindows(); });
     multi_down_and_send_cancel->set_duration(GESTURE_BASE_DURATION);
@@ -153,12 +154,19 @@ void IGestureManager::addMultiFingerGesture(const float* sensitivity, const int6
     swipe_actions.emplace_back(std::move(swipe_and_emit));
     swipe_actions.emplace_back(std::move(swipe_liftoff));
 
-    auto ack = [swipe_ptr, this]() {
+    auto ack = [swipe_ptr, pinch_threshold, this]() {
         const auto drag =
             DragGestureEvent{DragGestureType::SWIPE, 0, static_cast<int>(this->m_sGestureState.fingers.size())};
         if (this->emitDragGestureEnd(drag)) {
             return;
         } else {
+            double pinch_scale = this->m_sGestureState.get_pinch_scale();
+            double lo          = std::clamp(1.0 - *pinch_threshold, 0.1, 1.0);
+            double hi          = 1.0 + *pinch_threshold;
+            hi                 = hi < 1.0 ? 1.0 : hi;
+            if (pinch_scale < lo || pinch_scale > hi)
+                return;
+
             const auto gesture = CompletedGestureEvent{CompletedGestureType::SWIPE, swipe_ptr->target_direction,
                                                        static_cast<int>(this->m_sGestureState.fingers.size())};
 
