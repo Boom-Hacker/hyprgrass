@@ -130,6 +130,8 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
                                 Hyprlang::CConfigValue((Hyprlang::STRING) "d"));
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:touch_gestures:sensitivity",
                                 Hyprlang::CConfigValue((Hyprlang::FLOAT)1.0));
+    HyprlandAPI::addConfigValue(PHANDLE, "plugin:touch_gestures:pinch_threshold",
+                                Hyprlang::CConfigValue((Hyprlang::FLOAT)0.4));
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:touch_gestures:long_press_delay",
                                 Hyprlang::CConfigValue((Hyprlang::INT)400));
     HyprlandAPI::addConfigValue(PHANDLE, "plugin:touch_gestures:edge_margin",
